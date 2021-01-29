@@ -1,0 +1,203 @@
+#include <iostream>
+using namespace std;
+
+typedef int ElemType;
+/*定义单链表结构体*/
+typedef struct Lnode {
+	ElemType data;
+	struct Lnode* next;
+}Lnode, *LinkList;
+
+/*（1）初始化  */
+bool InitList_L(LinkList &L) {	// 构造一个空链表L
+	L = new Lnode;	// 生成新节点作为头结点，用头指针指向头结点
+	if (!L) {
+		return false;	// 生成节点失败
+	}
+	L->next = NULL;	// 头结点的指针置空
+	return true;
+}
+
+/*（2）头插法: 一次输入，向单向链表中头部插入n个数
+注意，链表的创建顺序与插入数据的顺序是相反的*/
+void CreateList_H(LinkList &L) {
+	cout<<"请输入您要添加的元素的个数："<<endl;
+	int n;		// 输入元素的个数，建立到头结点的单链表L
+	LinkList s;
+	/*L = new Lnode;
+	L->next = NULL;*/
+	cin >> n;
+	// 非常巧妙的n--用法，先判断n再进行减1操作，即总的运行次数还是n次
+	// 等价于while(n){  ···  n = n - 1;}
+	while (n--) {
+		// 创建一个新的结点
+		s = new Lnode;
+		// 输入s结点的数据项，相当于将输入的值赋值给s的数据项
+		cin >> s->data;
+		// 新节点的next赋值为头结点的next
+		s->next = L->next;
+		// 再将头结点的next设置为此新节点，即完成了头插入新节点
+		L->next = s;
+	}
+}
+
+/*(3) 尾插法: 一次输入，向单向链表的尾部插入n个数
+注意，链表的创建顺序与数据的插入顺序一致的*/
+void CreateList_R(LinkList &L) {
+	int n;
+	// 添加新节点和尾巴结点
+	LinkList s, r;
+	/*L = new Lnode;
+	L->next = NULL;*/
+	r = L;	// 由于头结点不能移动，所以要用一个新的结点r来定位最后一个元素
+	cout << "请输入您要添加的元素的个数：" << endl;
+	cin >> n;
+	/* 非常巧妙的n--用法，先判断n再进行减1操作，即总的运行次数还是n次 */
+	while (n--) {
+		s = new Lnode;	// 创建一个新的结点
+		cout << "请输入您要添加的元素：" << endl;
+		cin >> s->data;  // 输入s结点的数据项，相当于将输入的值赋值给s的数据项
+		s->next = NULL;	 // 新的结点在插入完成后要被赋值给尾节点
+		r->next = s;  // 尾结点的后一个元素为插入元素，即新节点
+		r = s;  // 新的结点在插入完成后被赋值为尾节点
+	}
+	cout << "新生成的链表如下：" << endl;
+	while (L->next) {
+		cout << L->next->data << " ";
+		L = L->next;
+	}
+}
+
+/*(4) 取值*/
+bool GetElem_L(LinkList L, int index, int &e) {
+	int j;
+	LinkList p;
+	p = L->next;
+	j = 0;
+	while (j<index && p) {	// 注意这里的 && p ，是指p成立，及链表还存在下一个元素
+		p = p->next;
+		j++;
+	}
+	if (!p || j>index) {
+		return false;
+	}
+	e = p->data;
+	return true;
+}
+
+/*(5) 查找*/
+bool LocateElem_L(LinkList L, int e) {
+	LinkList p;
+	p = L->next;
+	while (p && p->data!=e) {
+		p = p->next;
+	}
+	if (!p) {
+		return false;
+	}
+	return true;
+}
+
+/*(6) 插入 
+ * Location		头结点的地址
+ * index		插入元素的目标位置，即插入下标
+ * element		插入元素的值
+ */
+bool ListInsert_L(LinkList &Location, int i, int e) {
+	LinkList p;
+	p = new Lnode;
+	p->data = e;
+	int count = 0;
+	// 当结点头结点L有下一个结点，并且
+	while (Location && count<i) {
+		Location = Location->next;
+		count++;
+	}
+	if (!Location || count>i) {
+		return false;
+	}
+	/*这是完成插入动作的两部核心操作*/
+	p->next = Location->next;
+	Location->next = p;
+	return true;
+}
+
+/*(7) 删除
+ *	L		头结点
+ *	i		删除目标元素的下标
+ */
+//bool ListDelete_L(LinkList &L, int i) {
+//	LinkList p, q;
+//	int j;
+//	p = L;
+//	j = 0;
+//	while ((p->next) && (j<i-1)) {
+//		p = p->next;
+//		j++;
+//	}
+//	if (!(p->data) || (j>i-1)) {
+//		return false;
+//	}
+//	q = p->next;
+//	p->next = q->next;
+//	delete q;
+//	return true;
+//}
+
+
+/*(8) 合并顺序链表*/
+LinkList MergeLinkList(LinkList La, LinkList Lb, LinkList &Lc) {
+	// r指向最后生成的表Lc
+	LinkList a, b, r;
+	a = La->next; // a指向La的第一个元素节点
+	b = Lb->next; // b指向Lb的第一个数据结点
+	Lc = La;	  // Lc指向La的头结点
+	r = Lc;		  // r指向新链表Lc的尾部
+	// 当a和b都存在下一个元素时，进行数值的比较
+	while (a && b) {
+		if (a->data <= b->data) {
+			r->next = a;	// 尾结点的指针域指向此时的a
+			r = a;	// 尾结点变为a
+			a = a->next;	// a向下移动
+		}
+		else {
+			r->next = b;	// 尾结点的指针域指向此时的b
+			r = b;	// 尾结点变为b
+			b = b->next;	// b向下移动
+		}
+	}
+	/* 当a或者b遍历到链表的尾部时，将有剩余元素的链表的
+	剩余元素的头节点赋值给尾结点,即完成链表的合并*/
+	r->next = a ? a : b;
+	// 删除无用节点Lb
+	delete Lb;
+	// 打印合并后的链表Lc
+	cout<<"打印合并后的链表Lc如下："<<endl;
+	/*while (Lc->next) {
+		cout<<Lc->next->data<<" ";
+		Lc = Lc->next;
+	}*/
+	return Lc;
+}
+
+
+
+int main() {
+	// 创建并初始化链表01和02
+	LinkList linkList01;
+	InitList_L(linkList01);
+	LinkList linkList02;
+	InitList_L(linkList02);
+	// 向01 02链表添加测试元素
+	CreateList_R(linkList01);
+	CreateList_R(linkList02);
+	// 测试MergeLinkList函数
+	LinkList linkList03;
+	InitList_L(linkList02);
+	LinkList result;
+	result = MergeLinkList(linkList01, linkList01, linkList03);
+	result = result->next;
+	if (result) {
+		cout<<result->data<<" ";
+	}
+}
